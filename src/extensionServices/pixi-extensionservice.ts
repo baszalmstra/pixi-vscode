@@ -11,6 +11,7 @@ import {
 } from "@vscode/python-extension";
 import { VSCodeExtensionService } from "./vscode-service";
 import { PypiClient, PypiService } from "../pypi";
+import { PixiCommand } from "../enums";
 
 // Calls to this class are only made from src/extension.ts
 export class PixiExtensionService {
@@ -257,7 +258,7 @@ export class PixiExtensionService {
 			});
 	}
 
-	async activateEnvironmentTerminal(uri: vscode.Uri) {
+        async activateEnvironmentTerminal(uri: vscode.Uri) {
 		if (await this.vse.isEmptyWorkspace()) {
 			notify.error("No workspace folders open");
 			return;
@@ -287,11 +288,17 @@ export class PixiExtensionService {
 			return;
 		}
 
-		const cmd = `pixi shell -e ${env.name} --manifest-path ${manifestPath}`;
-		console.log(cmd);
-		// run "pixi shell -e $env" command
-		this.vse.openTerminalAndRunCommand(cmd, `Pixi: ${env.name}`, true);
-	}
+                const cmd = `pixi shell -e ${env.name} --manifest-path ${manifestPath}`;
+                console.log(cmd);
+                // run "pixi shell -e $env" command
+                this.vse.openTerminalAndRunCommand(cmd, `Pixi: ${env.name}`, true);
+        }
+
+        async runTask(manifestUri: vscode.Uri, task: string) {
+                const manifestPath = manifestUri.fsPath;
+                const args = [PixiCommand.run, task, "--manifest-path", manifestPath];
+                this.vse.runPixiCommand(args);
+        }
 
 	/**
 	 * Get the Pixi project directory

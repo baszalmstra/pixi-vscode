@@ -7,6 +7,7 @@ import { Pixi } from "./environmentManagers/pixi";
 import { PixiExtensionService } from "./extensionServices/pixi-extensionservice";
 import { PypiService } from "./pypi/pypi-service";
 import { PypiClient } from "./pypi/pypi-client";
+import { PixiTaskCodeLensProvider } from "./taskCodeLensProvider";
 const Cache = require("vscode-cache");
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -25,7 +26,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
-	const pxe = new PixiExtensionService(cache, pypiService);
+       const pxe = new PixiExtensionService(cache, pypiService);
+
+        context.subscriptions.push(
+                vscode.languages.registerCodeLensProvider(
+                        { pattern: "**/pixi.toml" },
+                        new PixiTaskCodeLensProvider()
+                )
+        );
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
@@ -78,14 +86,23 @@ export function activate(context: vscode.ExtensionContext) {
 		)
 	);
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand(
-			"pixi-vscode.activateEnvironmentTerminal",
-			async (uri: vscode.Uri) => {
-				await pxe.activateEnvironmentTerminal(uri);
-			}
-		)
-	);
+        context.subscriptions.push(
+                vscode.commands.registerCommand(
+                        "pixi-vscode.activateEnvironmentTerminal",
+                        async (uri: vscode.Uri) => {
+                                await pxe.activateEnvironmentTerminal(uri);
+                        }
+                )
+        );
+
+        context.subscriptions.push(
+                vscode.commands.registerCommand(
+                        "pixi-vscode.runTask",
+                        async (uri: vscode.Uri, task: string) => {
+                                await pxe.runTask(uri, task);
+                        }
+                )
+        );
 }
 
 // This method is called when your extension is deactivated
